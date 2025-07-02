@@ -5,7 +5,14 @@ const mainRouter = require("./routes/index");
 const app = express();
 const { PORT = 3001 } = process.env;
 
-// Middleware to parse JSON
+app.use(express.json());
+
+app.use((req, res, next) => {
+  req.user = {
+    _id: "5d8b8592978f8bd833ca8133",
+  };
+  next();
+});
 
 // Connect to MongoDB
 mongoose
@@ -15,10 +22,7 @@ mongoose
   })
   .catch(console.error);
 
-// Use routes
-app.use(express.json());
 app.use("/", mainRouter);
-
 // Handle non-existent routes
 app.use((req, res) => {
   res.status(404).send({ message: "Requested resource not found" });
