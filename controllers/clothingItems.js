@@ -11,10 +11,9 @@ module.exports.likeItem = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
-    .orFail(() => new Error("NotFound"))
+    .orFail(() => Promise.reject(new Error("NotFound")))
     .then((item) => res.send(item))
     .catch((err) => {
-      console.error(err);
       if (err.name === "CastError") {
         return res
           .status(BAD_REQUEST)
@@ -23,6 +22,7 @@ module.exports.likeItem = (req, res) => {
       if (err.message === "NotFound") {
         return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
+      console.error(err);
       return res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" });
@@ -35,10 +35,9 @@ module.exports.dislikeItem = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true }
   )
-    .orFail(() => new Error("NotFound"))
+    .orFail(() => Promise.reject(new Error("NotFound")))
     .then((item) => res.send(item))
     .catch((err) => {
-      console.error(err);
       if (err.name === "CastError") {
         return res
           .status(BAD_REQUEST)
@@ -47,6 +46,7 @@ module.exports.dislikeItem = (req, res) => {
       if (err.message === "NotFound") {
         return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
+      console.error(err);
       return res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" });
@@ -68,10 +68,10 @@ module.exports.createItem = (req, res) => {
   Item.create({ name, weather, imageUrl, owner })
     .then((item) => res.status(201).send(item))
     .catch((err) => {
-      console.error(err);
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: err.message });
       }
+      console.error(err);
       return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
 };
@@ -85,7 +85,7 @@ module.exports.deleteItem = (req, res) => {
     })
     .then((item) => {
       if (!item) return res.status(404).send({ message: "Item not found" });
-      res.send(item);
+      return res.send(item);
     })
     .catch((err) => {
       if (err.name === "CastError") {
