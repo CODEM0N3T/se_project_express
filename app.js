@@ -6,6 +6,7 @@ const app = express();
 const { PORT = 3001 } = process.env;
 
 app.use(express.json());
+app.use("/users", require("./routes/users"));
 
 app.use((req, res, next) => {
   req.user = {
