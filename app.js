@@ -2,12 +2,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const mainRouter = require("./routes/index");
 
+const { NOT_FOUND } = require("./utils/errors");
+
 const app = express();
 const { PORT = 3001 } = process.env;
 
 app.use(express.json());
-app.use("/users", require("./routes/users"));
-app.use("/items", require("./routes/clothingItems"));
 
 app.use((req, res, next) => {
   req.user = {
@@ -27,7 +27,7 @@ mongoose
 app.use("/", mainRouter);
 // Handle non-existent routes
 app.use((req, res) => {
-  res.status(404).send({ message: "Requested resource not found" });
+  res.status(NOT_FOUND).send({ message: "Requested resource not found" });
 });
 
 // Start server

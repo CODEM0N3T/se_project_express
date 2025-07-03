@@ -56,8 +56,10 @@ module.exports.dislikeItem = (req, res) => {
 module.exports.getItems = (req, res) => {
   Item.find({})
     .then((items) => res.send(items))
-    .catch((err) =>
-      res.status(INTERNAL_SERVER_ERROR).send({ message: err.message })
+    .catch(() =>
+      res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" })
     );
 };
 
@@ -72,7 +74,9 @@ module.exports.createItem = (req, res) => {
         return res.status(BAD_REQUEST).send({ message: err.message });
       }
       console.error(err);
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -95,6 +99,6 @@ module.exports.deleteItem = (req, res) => {
       }
       return res
         .status(err.statusCode || INTERNAL_SERVER_ERROR)
-        .send({ message: err.message });
+        .send({ message: "An error has occurred on the server" });
     });
 };
