@@ -11,7 +11,7 @@ module.exports.likeItem = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
-    .orFail(() => Promise.reject(new Error("NotFound")))
+    .orFail(() => new Error("NotFound"))
     .then((item) => res.send(item))
     .catch((err) => {
       if (err.name === "CastError") {
@@ -35,7 +35,7 @@ module.exports.dislikeItem = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true }
   )
-    .orFail(() => Promise.reject(new Error("NotFound")))
+    .orFail(() => new Error("NotFound"))
     .then((item) => res.send(item))
     .catch((err) => {
       if (err.name === "CastError") {
@@ -71,7 +71,9 @@ module.exports.createItem = (req, res) => {
     .then((item) => res.status(201).send(item))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: err.message });
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Invalid item ID format" });
       }
       console.error(err);
       return res
@@ -88,7 +90,8 @@ module.exports.deleteItem = (req, res) => {
       throw error;
     })
     .then((item) => {
-      if (!item) return res.status(404).send({ message: "Item not found" });
+      if (!item)
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
       return res.send(item);
     })
     .catch((err) => {
