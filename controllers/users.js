@@ -11,26 +11,26 @@ const {
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
-  bcrypt.hash(password, 10).then((hash) =>
-    User.create({ name, avatar, email, password: hash })
-      .then((user) => {
-        const userData = user.toObject();
-        delete userData.password;
-        res.status(201).send(userData);
-      })
-      .catch((err) => {
-        if (err.code === 11000) {
-          return res.status(409).send({ message: "Email already exists" });
-        }
-        if (err.name === "ValidationError") {
-          return res.status(BAD_REQUEST).send({ message: "Validation error" });
-        }
-        console.error(err);
-        return res
-          .status(INTERNAL_SERVER_ERROR)
-          .send({ message: "An error has occurred on the server" });
-      })
-  );
+  return bcrypt
+    .hash(password, 10)
+    .then((hash) => User.create({ name, avatar, email, password: hash }))
+    .then((user) => {
+      const userData = user.toObject();
+      delete userData.password;
+      return res.status(201).send(userData);
+    })
+    .catch((err) => {
+      if (err.code === 11000) {
+        return res.status(409).send({ message: "Email already exists" });
+      }
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: "Validation error" });
+      }
+      console.error(err);
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
+    });
 };
 
 const login = (req, res) => {
