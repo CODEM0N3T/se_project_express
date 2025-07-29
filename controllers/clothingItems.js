@@ -19,6 +19,7 @@ module.exports.getItems = (req, res) => {
 module.exports.createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
+  console.log("Creating item with imageUrl:", imageUrl);
 
   Item.create({ name, weather, imageUrl, owner })
     .then((item) => res.status(201).send(item))
