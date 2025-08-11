@@ -5,6 +5,7 @@
 **WTWR (What To Wear)** is a full-stack web application that helps users decide what to wear based on the current weather in their location. This repository contains the **backend server** responsible for handling user registration and authorization, clothing item management, liking/unliking items, and integrating securely with the frontend client.
 
 The backend is built with **Node.js**, **Express**, and **MongoDB**, and includes full user authentication, REST API routes, error handling, and deployment on a remote server.
+
 ---
 
 ## 🔧 Functionality
