@@ -1,9 +1,12 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const { errors: celebrateErrors } = require("celebrate");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 const mainRouter = require("./routes/index");
+const errorHandler = require("./middlewares/error-handler");
 
-const { NOT_FOUND } = require("./utils/errors");
+// const { NOT_FOUND } = require("./utils/errors");
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -19,11 +22,20 @@ mongoose
   })
   .catch(console.error);
 
+app.use(requestLogger);
+
 app.use("/", mainRouter);
+
 // Handle non-existent routes
-app.use((req, res) => {
-  res.status(NOT_FOUND).send({ message: "Requested resource not found" });
+app.use((req, res, next) => {
+  const { NotFoundError } = require("./utils/custom-errors");
+  next(new NotFoundError("Requested resource not found"));
 });
+
+app.use(errorLogger);
+
+app.use(celebrateErrors());
+app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
