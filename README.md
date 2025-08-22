@@ -6,7 +6,6 @@
 
 The backend is built with **Node.js**, **Express**, and **MongoDB**, and includes full user authentication, REST API routes, error handling, and deployment on a remote server.
 ---
-
 ## 🔧 Functionality
 
 - Full **CRUD operations** for clothing items
