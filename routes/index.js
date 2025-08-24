@@ -5,11 +5,11 @@ const userRoutes = require("./users");
 const itemRoutes = require("./clothingItems");
 const { login, createUser } = require("../controllers/users");
 
-router.get("/crash-test", (req, res) => {
-  setTimeout(() => {
-    throw new Error("Server will crash now");
-  }, 0);
-});
+// router.get("/crash-test", (req, res) => {
+//   setTimeout(() => {
+//     throw new Error("Server will crash now");
+//   }, 0);
+// });
 
 router.post("/signup", createUser);
 router.post("/signin", login);
