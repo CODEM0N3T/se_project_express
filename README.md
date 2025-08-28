@@ -1,5 +1,8 @@
 # WTWR – What To Wear (Backend)
 
+Deployed project’s domain name: https://wtwr.hbmc.net
+Frontend GitHub repo: https://github.com/CODEM0N3T/se_project_react
+
 ## 🌦️ Project Overview
 
 **WTWR (What To Wear)** is a full-stack web application that helps users decide what to wear based on the current weather in their location. This repository contains the **backend server** responsible for handling user registration and authorization, clothing item management, liking/unliking items, and integrating securely with the frontend client.
