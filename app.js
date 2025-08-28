@@ -7,7 +7,7 @@ const { requestLogger, errorLogger } = require("./middlewares/logger");
 const mainRouter = require("./routes/index");
 const errorHandler = require("./middlewares/error-handler");
 
-// const { NOT_FOUND } = require("./utils/errors");
+const { NotFoundError } = require("./utils/customErrors");
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -25,17 +25,16 @@ mongoose
 
 app.use(requestLogger);
 
-// app.get("/crash-test", () => {
-//   setTimeout(() => {
-//     throw new Error("Server will crash now");
-//   }, 0);
-// });
+app.get("/crash-test", () => {
+  setTimeout(() => {
+    throw new Error("Server will crash now");
+  }, 0);
+});
 
 app.use("/", mainRouter);
 
 // Handle non-existent routes
 app.use((req, res, next) => {
-  const { NotFoundError } = require("./utils/custom-errors");
   next(new NotFoundError("Requested resource not found"));
 });
 

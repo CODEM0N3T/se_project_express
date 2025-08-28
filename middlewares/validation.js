@@ -93,13 +93,10 @@ module.exports.validateAuthBody = celebrate(
 // Generic: allows either key if present (not both required simultaneously)
 module.exports.validateId = celebrate({
   [Segments.PARAMS]: Joi.object().keys({
-    userId: Joi.string().hex().length(24).messages({
-      "string.hex": 'The "userId" must be a hexadecimal string',
-      "string.length": 'The "userId" must be 24 characters long',
-    }),
-    itemId: Joi.string().hex().length(24).messages({
+    itemId: Joi.string().hex().length(24).required().messages({
       "string.hex": 'The "itemId" must be a hexadecimal string',
       "string.length": 'The "itemId" must be 24 characters long',
+      "any.required": 'The "itemId" route parameter is required',
     }),
   }),
 });

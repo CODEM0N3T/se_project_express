@@ -7,108 +7,87 @@ const {
   UNAUTHORIZED,
   NOT_FOUND,
   CONFLICT,
-  INTERNAL_SERVER_ERROR,
+
 } = require("../utils/errors");
 
-const createUser = (req, res) => {
-  const { name, avatar, email, password } = req.body;
+const createUser = async (req, res, next) => {
+  try {
+    const { name, avatar, email, password } = req.body;
 
-  if (!email || !password) {
+    if (!email || !password) {
+      throw new BAD_REQUEST("Email and password are required");
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+    const user = await User.create({ name, avatar, email, password: hash });
+
+    // sanitize
+    const { _id } = user;
     return res
-      .status(BAD_REQUEST)
-      .send({ message: "Email and password are required" });
+      .status(201)
+      .send({ _id, name: user.name, avatar: user.avatar, email: user.email });
+  } catch (err) {
+    if (err?.code === 11000) return next(new CONFLICT("Email already exists"));
+    if (err?.name === "ValidationError")
+      return next(new BAD_REQUEST("Validation error"));
+    return next(err);
   }
-
-  return bcrypt
-    .hash(password, 10)
-    .then((hash) => User.create({ name, avatar, email, password: hash }))
-    .then((user) => {
-      const userData = user.toObject();
-      delete userData.password;
-      return res.status(201).send(userData);
-    })
-    .catch((err) => {
-      console.error("Create user error:", err);
-      if (err.code === 11000) {
-        return res.status(CONFLICT).send({ message: "Email already exists" });
-      }
-      if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: "Validation error" });
-      }
-      // console.error(err);
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
-    });
 };
 
-const login = (req, res) => {
-  const { email, password } = req.body;
+// POST /signin
+const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res
-      .status(BAD_REQUEST)
-      .send({ message: "Email and password are required" });
+    if (!email || !password) {
+      throw new BAD_REQUEST("Email and password are required");
+    }
+
+    const user = await User.findUserByCredentials(email, password);
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
+    return res.send({ token });
+  } catch (err) {
+    if (err?.message === "Incorrect email or password") {
+      return next(new UNAUTHORIZED("Invalid email or password"));
+    }
+    return next(err);
   }
-
-  return User.findUserByCredentials(email, password)
-    .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
-      return res.send({ token });
-    })
-    .catch((err) => {
-      if (err.message === "Incorrect email or password") {
-        return res
-          .status(UNAUTHORIZED)
-          .send({ message: "Invalid email or password" });
-      }
-      console.error(err);
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Internal server error" });
-    });
 };
 
-const getCurrentUser = (req, res) =>
-  User.findById(req.user._id)
-    .then((user) => {
-      if (!user) {
-        return res.status(NOT_FOUND).send({ message: "User not found" });
-      }
-      return res.send(user);
-    })
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
-    });
+// GET /users/me
+const getCurrentUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) throw new NOT_FOUND("User not found");
 
-const updateUserProfile = (req, res) => {
-  const { name, avatar } = req.body;
+    const { _id, name, avatar, email } = user;
+    return res.send({ _id, name, avatar, email });
+  } catch (err) {
+    return next(err);
+  }
+};
 
-  User.findByIdAndUpdate(
-    req.user._id,
-    { name, avatar },
-    { new: true, runValidators: true }
-  )
-    .then((user) => {
-      if (!user) {
-        return res.status(NOT_FOUND).send({ message: "User not found" });
-      }
-      return res.send(user);
-    })
-    .catch((err) => {
-      if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: "Validation error" });
-      }
-      console.error(err);
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
-    });
+// PATCH /users/me
+const updateUserProfile = async (req, res, next) => {
+  try {
+    const { name, avatar } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { name, avatar },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) throw new NOT_FOUND("User not found");
+
+    const { _id, email } = user;
+    return res.send({ _id, name: user.name, avatar: user.avatar, email });
+  } catch (err) {
+    if (err?.name === "ValidationError" || err?.name === "CastError") {
+      return next(new BAD_REQUEST("Validation error"));
+    }
+    return next(err);
+  }
 };
 
 module.exports = {
