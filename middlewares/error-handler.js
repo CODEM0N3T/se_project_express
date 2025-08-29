@@ -1,10 +1,9 @@
 // middlewares/error-handler.js
-const { INTERNAL_SERVER_ERROR } = require("../utils/errors");
 
 module.exports = (err, req, res, next) => {
-  const status = err.statusCode || INTERNAL_SERVER_ERROR;
+  const status = err.statusCode || 500;
   const message =
-    status === INTERNAL_SERVER_ERROR
+    status === 500
       ? "An error has occurred on the server"
       : err.message || "An unexpected error occurred";
 

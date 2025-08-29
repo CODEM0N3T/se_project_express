@@ -7,7 +7,7 @@ const { requestLogger, errorLogger } = require("./middlewares/logger");
 const mainRouter = require("./routes/index");
 const errorHandler = require("./middlewares/error-handler");
 
-const { NotFoundError } = require("./utils/customErrors");
+const { NotFoundError } = require("./utils/errors");
 
 const app = express();
 const { PORT = 3001 } = process.env;

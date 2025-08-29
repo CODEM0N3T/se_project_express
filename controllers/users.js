@@ -3,11 +3,10 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 const {
-  BAD_REQUEST,
-  UNAUTHORIZED,
-  NOT_FOUND,
-  CONFLICT,
-
+  BadRequestError,
+  UnauthorizedError,
+  NotFoundError,
+  ConflictError,
 } = require("../utils/errors");
 
 const createUser = async (req, res, next) => {
@@ -15,7 +14,7 @@ const createUser = async (req, res, next) => {
     const { name, avatar, email, password } = req.body;
 
     if (!email || !password) {
-      throw new BAD_REQUEST("Email and password are required");
+      throw new BadRequestError("Email and password are required");
     }
 
     const hash = await bcrypt.hash(password, 10);
@@ -27,9 +26,10 @@ const createUser = async (req, res, next) => {
       .status(201)
       .send({ _id, name: user.name, avatar: user.avatar, email: user.email });
   } catch (err) {
-    if (err?.code === 11000) return next(new CONFLICT("Email already exists"));
+    if (err?.code === 11000)
+      return next(new ConflictError("Email already exists"));
     if (err?.name === "ValidationError")
-      return next(new BAD_REQUEST("Validation error"));
+      return next(new BadRequestError("Validation error"));
     return next(err);
   }
 };
@@ -40,7 +40,7 @@ const login = async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      throw new BAD_REQUEST("Email and password are required");
+      throw new BadRequestError("Email and password are required");
     }
 
     const user = await User.findUserByCredentials(email, password);
@@ -48,7 +48,7 @@ const login = async (req, res, next) => {
     return res.send({ token });
   } catch (err) {
     if (err?.message === "Incorrect email or password") {
-      return next(new UNAUTHORIZED("Invalid email or password"));
+      return next(new UnauthorizedError("Invalid email or password"));
     }
     return next(err);
   }
@@ -58,7 +58,7 @@ const login = async (req, res, next) => {
 const getCurrentUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
-    if (!user) throw new NOT_FOUND("User not found");
+    if (!user) throw new NotFoundError("User not found");
 
     const { _id, name, avatar, email } = user;
     return res.send({ _id, name, avatar, email });
@@ -78,13 +78,13 @@ const updateUserProfile = async (req, res, next) => {
       { new: true, runValidators: true }
     );
 
-    if (!user) throw new NOT_FOUND("User not found");
+    if (!user) throw new NotFoundError("User not found");
 
     const { _id, email } = user;
     return res.send({ _id, name: user.name, avatar: user.avatar, email });
   } catch (err) {
     if (err?.name === "ValidationError" || err?.name === "CastError") {
-      return next(new BAD_REQUEST("Validation error"));
+      return next(new BadRequestError("Validation error"));
     }
     return next(err);
   }

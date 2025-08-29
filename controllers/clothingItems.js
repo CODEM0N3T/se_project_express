@@ -3,7 +3,7 @@ const {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
-} = require("../utils/customErrors");
+} = require("../utils/errors");
 
 module.exports.getItems = (req, res, next) => {
   Item.find({})
